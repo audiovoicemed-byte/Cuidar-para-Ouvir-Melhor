@@ -176,26 +176,47 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isPlaying, currentStep]);
 
-  const selectTinnitus = async (type: TinnitusType) => {
+ const selectTinnitus = async (type: TinnitusType) => {
     setIsLoadingChallenge(true);
     setSelectedType(type);
+    
+    // Mapeamento dos arquivos de áudio que estão na sua pasta public
+    const audioMap: Record<TinnitusType, string> = {
+      [TinnitusType.TONAL]: '/voz-tonal.mp3',
+      [TinnitusType.HISSING]: '/voz-chiado.mp3',
+      [TinnitusType.PULSATILE]: '/voz-pulsatil.mp3',
+      [TinnitusType.CRICKET]: '/voz-grilo.mp3',
+    };
+
+    // Frases que aparecerão no resumo final (foco em fonoaudiologia/segurança)
+    const frasesFixas: Record<TinnitusType, string> = {
+      [TinnitusType.TONAL]: "A exposição a ruídos intensos sem proteção pode causar danos irreversíveis.",
+      [TinnitusType.HISSING]: "O uso correto dos protetores auditivos é a sua principal defesa no trabalho.",
+      [TinnitusType.PULSATILE]: "Zumbido pulsátil deve ser avaliado por um especialista. Proteja seus ouvidos.",
+      [TinnitusType.CRICKET]: "Sons intermitentes também indicam fadiga auditiva. Faça pausas de silêncio.",
+    };
+
     try {
-      const text = await generateInformativePhrase(type);
-      setPhrase(text);
+      // 1. Define a frase educativa imediatamente
+      setPhrase(frasesFixas[type]);
+
+      // 2. Busca o arquivo MP3 correspondente
+      const response = await fetch(audioMap[type]);
+      if (!response.ok) throw new Error("Arquivo de áudio não encontrado na pasta public");
       
+      const arrayBuffer = await response.arrayBuffer();
+      
+      // 3. Prepara o contexto de áudio para decodificar o MP3
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const base64 = await generateSpeechAudio(text);
-      const buffer = await decodeAudioBuffer(base64, audioCtx);
-      setVoiceBuffer(buffer);
+      const buffer = await audioCtx.decodeAudioData(arrayBuffer);
       
+      // 4. Salva o áudio decodificado e avança para a etapa de audição
+      setVoiceBuffer(buffer);
       setCurrentStep(Step.LISTENING);
-      setIsPlaying(false);
-      setHasStartedOnce(false);
-      setListenTimer(0);
-      setVoiceTrigger(0);
+
     } catch (e) {
-      console.error(e);
-      alert("Erro ao preparar a simulação sonora. Tente novamente.");
+      console.error("Erro na triagem de áudio:", e);
+      alert("Erro ao carregar a simulação. Verifique se os arquivos MP3 estão na pasta 'public'.");
     } finally {
       setIsLoadingChallenge(false);
     }

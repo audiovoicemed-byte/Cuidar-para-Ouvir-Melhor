@@ -146,27 +146,31 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
     }
   };
 
-// 1. Controla o início e fim da simulação completa
+// 1. Controla o início e o fim da simulação (Zumbido + Voz)
   useEffect(() => {
     if (isPlaying) {
       startSimulation();
     } else {
       stopAll();
     }
+    // Cleanup: Garante que o som pare se o usuário sair da página
     return () => stopAll();
   }, [isPlaying]);
 
   // 2. Controla especificamente o gatilho de repetir a frase
   useEffect(() => {
+    // Verificamos se o botão foi clicado (trigger > 0)
     if (voiceTrigger > 0 && voiceBuffer && audioCtxRef.current) {
-      // Se o áudio estiver pausado pelo navegador, retomamos e damos o play
+      
+      // Se o navegador suspendeu o áudio, nós o retomamos e damos o play
       if (audioCtxRef.current.state === 'suspended') {
         audioCtxRef.current.resume().then(() => startVoice());
       } else {
-        startVoice(); // Chamando o nome correto da função
+        // Chamamos a função startVoice que já existe no seu código
+        startVoice(); 
       }
     }
   }, [voiceTrigger]);
 
-  return null; // O componente não renderiza nada visualmente, apenas áudio
+  return null; // O componente gerencia o áudio nos bastidores
 };

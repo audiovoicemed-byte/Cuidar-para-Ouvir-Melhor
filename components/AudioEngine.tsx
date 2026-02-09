@@ -154,10 +154,9 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
 
   // Efeito separado para repetir apenas a voz quando o gatilho mudar
   useEffect(() => {
-    if (isPlaying && voiceTrigger > 0) {
-      startVoice();
-    }
-  }, [voiceTrigger]);
-
+  if (isPlaying && voiceTrigger > 0) {
+    startVoice();
+  }
+}, [voiceTrigger]);
   return null;
 };

@@ -29,23 +29,32 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
   };
 
   const startVoice = () => {
-    if (!audioCtxRef.current || !voiceBuffer || !voiceGainNodeRef.current) return;
-    
-    // Para a voz anterior se estiver tocando
-    try {
-      voiceNodeRef.current?.stop();
-    } catch (e) {}
+  // 1. Verificações de segurança
+  if (!audioCtxRef.current || !voiceBuffer || !voiceGainNodeRef.current) return;
+  
+  // 2. IMPORTANTE: Para a voz anterior imediatamente
+  // Sem isso, o navegador pode se recusar a tocar dois buffers iguais ao mesmo tempo
+  try {
+    voiceNodeRef.current?.disconnect(); // Desconecta o cabo
+    voiceNodeRef.current?.stop();       // Para o motor
+  } catch (e) {
+    // Ignora se não houver nada tocando
+  }
 
-    const ctx = audioCtxRef.current;
-    const voiceSource = ctx.createBufferSource();
-    voiceSource.buffer = voiceBuffer;
-    voiceSource.loop = false; 
-    voiceSource.connect(voiceGainNodeRef.current);
-    
-    // Sincroniza o fim da experiência com o fim da voz
-    voiceSource.onended = () => {
-      if (onEnded) onEnded();
-    };
+  const ctx = audioCtxRef.current;
+  const voiceSource = ctx.createBufferSource();
+  voiceSource.buffer = voiceBuffer;
+  voiceSource.loop = false; 
+  voiceSource.connect(voiceGainNodeRef.current);
+  
+  voiceSource.onended = () => {
+    if (onEnded) onEnded();
+  };
+
+  // 3. Salva a nova referência para podermos pará-la no próximo clique
+  voiceNodeRef.current = voiceSource;
+  voiceSource.start(0);
+};
 
     voiceNodeRef.current = voiceSource;
     voiceSource.start();

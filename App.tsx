@@ -230,7 +230,7 @@ export default function App() {
 
  const repeatVoice = () => {
   setListenTimer(0);
-  // Usar Date.now() é o segredo para o AudioEngine perceber a mudança todas as vezes
+  // Date.now() gera um número gigante que muda a cada milissegundo
   setVoiceTrigger(Date.now()); 
   setIsPlaying(true);
 };

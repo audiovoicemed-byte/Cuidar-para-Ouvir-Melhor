@@ -208,9 +208,9 @@ export default function App() {
   };
 
   const repeatVoice = () => {
-    setListenTimer(0);
-    setVoiceTrigger(prev => prev + 1);
-    setIsPlaying(true);
+  setListenTimer(0);
+  setVoiceTrigger(prev => prev + 1); // Isso "cutuca" o AudioEngine para tocar de novo
+  setIsPlaying(true);
   };
 
   const stopListening = () => {

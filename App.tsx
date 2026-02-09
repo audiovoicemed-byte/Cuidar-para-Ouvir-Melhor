@@ -30,7 +30,7 @@ const LogoGE = () => (
   <div className="flex items-center gap-4 md:gap-5">
     <div className="flex-shrink-0">
       <img 
-        src="https://www.gevernova.com/themes/custom/gev_theme/logo.svg" 
+        src="/logo.svg"
         alt="GE Vernova" 
         className="h-6 md:h-8 w-auto object-contain"
       />

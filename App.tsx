@@ -230,7 +230,9 @@ export default function App() {
 
   const repeatVoice = () => {
     setListenTimer(0);
-    setVoiceTrigger(prev => prev + 1);
+    // Usamos Date.now() para garantir que o valor SEMPRE mude,
+    // forçando o AudioEngine a reiniciar o som.
+    setVoiceTrigger(Date.now()); 
     setIsPlaying(true);
   };
 

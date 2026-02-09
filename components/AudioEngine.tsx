@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { TinnitusType } from '../types';
+import { TinnitusType } from './types';
 
 interface AudioEngineProps {
   type: TinnitusType;

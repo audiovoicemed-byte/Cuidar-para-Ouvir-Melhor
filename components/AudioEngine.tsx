@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { TinnitusType } from '../types';
 
@@ -6,8 +5,8 @@ interface AudioEngineProps {
   type: TinnitusType;
   isPlaying: boolean;
   voiceBuffer: AudioBuffer | null;
-  voiceTrigger: number; // Propriedade para disparar a repetição da voz
-  onEnded?: () => void; // Callback para quando o áudio terminar
+  voiceTrigger: number;
+  onEnded?: () => void;
 }
 
 export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voiceBuffer, voiceTrigger, onEnded }) => {
@@ -29,35 +28,25 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
   };
 
   const startVoice = () => {
-  // 1. Verificações de segurança
-  if (!audioCtxRef.current || !voiceBuffer || !voiceGainNodeRef.current) return;
-  
-  // 2. IMPORTANTE: Para a voz anterior imediatamente
-  // Sem isso, o navegador pode se recusar a tocar dois buffers iguais ao mesmo tempo
-  try {
-    voiceNodeRef.current?.disconnect(); // Desconecta o cabo
-    voiceNodeRef.current?.stop();       // Para o motor
-  } catch (e) {
-    // Ignora se não houver nada tocando
-  }
+    if (!audioCtxRef.current || !voiceBuffer || !voiceGainNodeRef.current) return;
 
-  const ctx = audioCtxRef.current;
-  const voiceSource = ctx.createBufferSource();
-  voiceSource.buffer = voiceBuffer;
-  voiceSource.loop = false; 
-  voiceSource.connect(voiceGainNodeRef.current);
-  
-  voiceSource.onended = () => {
-    if (onEnded) onEnded();
-  };
+    try {
+      voiceNodeRef.current?.stop();
+      voiceNodeRef.current?.disconnect();
+    } catch (e) { }
 
-  // 3. Salva a nova referência para podermos pará-la no próximo clique
-  voiceNodeRef.current = voiceSource;
-  voiceSource.start(0);
-};
+    const ctx = audioCtxRef.current;
+    const voiceSource = ctx.createBufferSource();
+    voiceSource.buffer = voiceBuffer;
+    voiceSource.loop = false;
+    voiceSource.connect(voiceGainNodeRef.current);
+
+    voiceSource.onended = () => {
+      if (onEnded) onEnded();
+    };
 
     voiceNodeRef.current = voiceSource;
-    voiceSource.start();
+    voiceSource.start(0);
   };
 
   const startSimulation = async () => {
@@ -69,39 +58,27 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
 
     stopAll();
 
-    // CALIBRAÇÃO 60dBNA: Ajustamos os ganhos para níveis conservadores (escala 0.0 a 1.0)
-    // 0.4 a 0.5 de ganho em ruído branco/tons puros em fones comuns costuma aproximar-se de níveis de conversa (60dB).
-    
-    // 1. Ganho do Zumbido (LIMITADO)
+    // 1. Ganho do Zumbido
     const tinnitusGain = ctx.createGain();
-    let tinnitusVolume = 0.40; // Teto de 60dBNA aproximado
-    
-    if (type === TinnitusType.CRICKET) {
-      tinnitusVolume = 0.25;
-    } else if (type === TinnitusType.TONAL) {
-      tinnitusVolume = 0.30; // Tons puros agudos são percebidos como mais altos
-    }
-    
+    let tinnitusVolume = 0.40;
+    if (type === TinnitusType.CRICKET) tinnitusVolume = 0.25;
+    else if (type === TinnitusType.TONAL) tinnitusVolume = 0.30;
+
     tinnitusGain.gain.setValueAtTime(tinnitusVolume, ctx.currentTime);
     tinnitusGain.connect(ctx.destination);
 
-    // 2. Ganho da Voz (LIMITADO)
+    // 2. Ganho da Voz
     const voiceGain = ctx.createGain();
-    let voiceVolume = 0.15; 
-    
-    if (type === TinnitusType.HISSING) {
-      voiceVolume = 0.45; // Chiado mascara muito a voz, aumentamos um pouco mas respeitando o limite
-    } else if (type === TinnitusType.TONAL) {
-      voiceVolume = 0.10; 
-    } else if (type === TinnitusType.CRICKET) {
-      voiceVolume = 0.12; 
-    }
-    
+    let voiceVolume = 0.15;
+    if (type === TinnitusType.HISSING) voiceVolume = 0.45;
+    else if (type === TinnitusType.TONAL) voiceVolume = 0.10;
+    else if (type === TinnitusType.CRICKET) voiceVolume = 0.12;
+
     voiceGain.gain.setValueAtTime(voiceVolume, ctx.currentTime);
     voiceGain.connect(ctx.destination);
     voiceGainNodeRef.current = voiceGain;
 
-    // Setup Tinnitus Sound
+    // Setup do Som do Zumbido
     if (type === TinnitusType.TONAL) {
       const osc = ctx.createOscillator();
       osc.type = 'sine';
@@ -133,12 +110,12 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
       tinnitusNodeRef.current = osc;
     } else {
       const osc = ctx.createOscillator();
-      osc.type = 'sine'; 
-      osc.frequency.setValueAtTime(5500, ctx.currentTime); 
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(5500, ctx.currentTime);
       const mod = ctx.createGain();
       const lfo = ctx.createOscillator();
       lfo.type = 'square';
-      lfo.frequency.value = 18; 
+      lfo.frequency.value = 18;
       lfo.connect(mod.gain);
       osc.connect(mod);
       mod.connect(tinnitusGain);
@@ -148,38 +125,24 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
     }
 
     tinnitusNodeRef.current.start();
-    
-    // Inicia a voz pela primeira vez
-    if (voiceBuffer) {
-      startVoice();
-    }
+    if (voiceBuffer) startVoice();
   };
 
-// 1. Controla o início e o fim da simulação (Zumbido + Voz)
   useEffect(() => {
-    if (isPlaying) {
-      startSimulation();
-    } else {
-      stopAll();
-    }
-    // Cleanup: Garante que o som pare se o usuário sair da página
+    if (isPlaying) startSimulation();
+    else stopAll();
     return () => stopAll();
   }, [isPlaying]);
 
-  // 2. Controla especificamente o gatilho de repetir a frase
- useEffect(() => {
-  if (voiceTrigger > 0 && voiceBuffer && audioCtxRef.current) {
-    const ctx = audioCtxRef.current;
-
-    // O "Despertador": Força o contexto de áudio a ficar ativo
-    if (ctx.state === 'suspended') {
-      ctx.resume().then(() => {
+  useEffect(() => {
+    if (voiceTrigger > 0 && voiceBuffer && audioCtxRef.current) {
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume().then(() => startVoice());
+      } else {
         startVoice();
-      });
-    } else {
-      startVoice();
+      }
     }
-  }
-}, [voiceTrigger]);
-      return null; // O componente gerencia o áudio nos bastidores
+  }, [voiceTrigger]);
+
+  return null;
 };

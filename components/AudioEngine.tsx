@@ -146,9 +146,16 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
     }
   };
 
+// Efeito que monitora o gatilho de repetição
   useEffect(() => {
-  if (voiceTrigger > 0 && voiceBuffer) {
-    // Lógica para tocar o som novamente
-    playAudio(voiceBuffer); 
-  }
-}, [voiceTrigger]); // O som reinicia toda vez que o gatilho muda;
+    // Se o gatilho mudar e tivermos o áudio carregado
+    if (voiceTrigger > 0 && voiceBuffer && audioCtxRef.current) {
+      
+      // Garantimos que o áudio não esteja "suspenso" pelo navegador
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume().then(() => startVoice());
+      } else {
+        startVoice(); // Chama a função correta para tocar
+      }
+    }
+  }, [voiceTrigger]); // Toda vez que o botão 'Repetir' for clicado, o trigger muda

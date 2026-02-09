@@ -228,13 +228,12 @@ export default function App() {
     setHasStartedOnce(true);
   };
 
-  const repeatVoice = () => {
-    setListenTimer(0);
-    // Usamos Date.now() para garantir que o valor SEMPRE mude,
-    // forçando o AudioEngine a reiniciar o som.
-    setVoiceTrigger(Date.now()); 
-    setIsPlaying(true);
-  };
+ const repeatVoice = () => {
+  setListenTimer(0);
+  // Usar Date.now() é o segredo para o AudioEngine perceber a mudança todas as vezes
+  setVoiceTrigger(Date.now()); 
+  setIsPlaying(true);
+};
 
   const stopListening = () => {
     setIsPlaying(false);

@@ -22,18 +22,19 @@ const FEELINGS = [
   { icon: '🧐', label: 'Curioso', color: 'bg-blue-50 text-blue-700 border-blue-100 hover:border-blue-300' },
 ];
 
-const LogoGE = () => (
+constconst LogoGE = () => (
   <div className="flex items-center gap-4 md:gap-5">
     <div className="flex-shrink-0">
+      {/* Alterado para .png e garantindo a barra inicial "/" */}
       <img 
-        src="https://www.gevernova.com/themes/custom/gev_theme/logo.svg" 
+        src="/logo-ge.png" 
         alt="GE Vernova" 
-        className="h-6 md:h-8 w-auto object-contain"
+        className="h-8 md:h-10 w-auto object-contain" 
       />
     </div>
     <div className="flex flex-col border-l-2 border-slate-200 pl-4 py-0.5">
-      <span className="text-[10px] md:text-[11px] font-black text-[#005f60] uppercase tracking-[0.15em] leading-none">Cuidar para</span>
-      <span className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em] leading-none mt-1">Ouvir Melhor</span>
+      <span className="text-[10px] font-black text-slate-900 tracking-[0.2em] leading-tight text-left">GE VERNOVA</span>
+      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-left">Saúde Ocupacional</span>
     </div>
   </div>
 );

@@ -1,0 +1,7 @@
+{
+  "name": "Cuidar para Ouvir Melhor",
+  "description": "Campanha de conscientização auditiva focada na prevenção do zumbido e na saúde do trabalhador.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

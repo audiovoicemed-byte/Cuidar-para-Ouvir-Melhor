@@ -167,19 +167,19 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
   }, [isPlaying]);
 
   // 2. Controla especificamente o gatilho de repetir a frase
-  useEffect(() => {
-    // Verificamos se o botão foi clicado (trigger > 0)
-    if (voiceTrigger > 0 && voiceBuffer && audioCtxRef.current) {
-      
-      // Se o navegador suspendeu o áudio, nós o retomamos e damos o play
-      if (audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume().then(() => startVoice());
-      } else {
-        // Chamamos a função startVoice que já existe no seu código
-        startVoice(); 
-      }
-    }
-  }, [voiceTrigger]);
+ useEffect(() => {
+  if (voiceTrigger > 0 && voiceBuffer && audioCtxRef.current) {
+    const ctx = audioCtxRef.current;
 
-  return null; // O componente gerencia o áudio nos bastidores
+    // O "Despertador": Força o contexto de áudio a ficar ativo
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => {
+        startVoice();
+      });
+    } else {
+      startVoice();
+    }
+  }
+}, [voiceTrigger]);
+      return null; // O componente gerencia o áudio nos bastidores
 };

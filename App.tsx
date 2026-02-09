@@ -29,10 +29,10 @@ const FEELINGS = [
 const LogoGE = () => (
   <div className="flex items-center gap-4 md:gap-5">
     <div className="flex-shrink-0">
-      <img 
-        src="/logo.svg"
-        alt="GE Vernova" 
-        className="h-6 md:h-8 w-auto object-contain"
+     <img 
+  src="/logo-ge.svg" // Remova o link longo e use este caminho curto
+  alt="GE Vernova" 
+  className="h-6 md:h-8 w-auto object-contain"
       />
     </div>
     <div className="flex flex-col border-l-2 border-slate-200 pl-4 py-0.5">

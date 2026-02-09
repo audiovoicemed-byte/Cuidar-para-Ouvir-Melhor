@@ -22,14 +22,17 @@ const FEELINGS = [
   { icon: '🧐', label: 'Curioso', color: 'bg-blue-50 text-blue-700 border-blue-100 hover:border-blue-300' },
 ];
 
-constconst LogoGE = () => (
+const LogoGE = () => (
   <div className="flex items-center gap-4 md:gap-5">
     <div className="flex-shrink-0">
-      {/* Alterado para .png e garantindo a barra inicial "/" */}
       <img 
-        src="/logo-ge.png" 
+        src="logo-ge.png" // Removi a barra inicial para testar o caminho relativo
         alt="GE Vernova" 
-        className="h-8 md:h-10 w-auto object-contain" 
+        className="h-8 md:h-10 w-auto object-contain"
+        onError={(e) => {
+          // Isto ajuda a diagnosticar se o ficheiro falhar
+          console.error("Erro ao carregar o logo. Verifique se o ficheiro está na pasta public.");
+        }}
       />
     </div>
     <div className="flex flex-col border-l-2 border-slate-200 pl-4 py-0.5">

@@ -1,8 +1,12 @@
 
-import { TinnitusType, Step } from './types'; // Apenas um ponto
-import { AudioEngine } from './AudioEngine'; // Remova o '/components'
-// Se o geminiService estiver na raiz também:
-import { generatePersonalizedAdvice } from './geminiService';
+import React, { useState, useEffect } from 'react';
+import { TinnitusType } from './types';
+import { 
+  generatePersonalizedAdvice, 
+  generateInformativePhrase, 
+  generateSpeechAudio, 
+  decodeAudioBuffer 
+} from './services/geminiService';
 import { AudioEngine } from './components/AudioEngine';
 
 enum Step {
@@ -26,18 +30,14 @@ const LogoGE = () => (
   <div className="flex items-center gap-4 md:gap-5">
     <div className="flex-shrink-0">
       <img 
-        src="logo-ge.png" // Removi a barra inicial para testar o caminho relativo
+        src="https://www.gevernova.com/themes/custom/gev_theme/logo.svg" 
         alt="GE Vernova" 
-        className="h-8 md:h-10 w-auto object-contain"
-        onError={(e) => {
-          // Isto ajuda a diagnosticar se o ficheiro falhar
-          console.error("Erro ao carregar o logo. Verifique se o ficheiro está na pasta public.");
-        }}
+        className="h-6 md:h-8 w-auto object-contain"
       />
     </div>
     <div className="flex flex-col border-l-2 border-slate-200 pl-4 py-0.5">
-      <span className="text-[10px] font-black text-slate-900 tracking-[0.2em] leading-tight text-left">GE VERNOVA</span>
-      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-left">Saúde Ocupacional</span>
+      <span className="text-[10px] md:text-[11px] font-black text-[#005f60] uppercase tracking-[0.15em] leading-none">Cuidar para</span>
+      <span className="text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em] leading-none mt-1">Ouvir Melhor</span>
     </div>
   </div>
 );
@@ -176,47 +176,26 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isPlaying, currentStep]);
 
- const selectTinnitus = async (type: TinnitusType) => {
+  const selectTinnitus = async (type: TinnitusType) => {
     setIsLoadingChallenge(true);
     setSelectedType(type);
-    
-    // Mapeamento dos arquivos de áudio que estão na sua pasta public
-    const audioMap: Record<TinnitusType, string> = {
-      [TinnitusType.TONAL]: '/voz-tonal.mp3',
-      [TinnitusType.HISSING]: '/voz-chiado.mp3',
-      [TinnitusType.PULSATILE]: '/voz-pulsatil.mp3',
-      [TinnitusType.CRICKET]: '/voz-grilo.mp3',
-    };
-
-    // Frases que aparecerão no resumo final (foco em fonoaudiologia/segurança)
-    const frasesFixas: Record<TinnitusType, string> = {
-      [TinnitusType.TONAL]: "A exposição a ruídos intensos sem proteção pode causar danos irreversíveis.",
-      [TinnitusType.HISSING]: "O uso correto dos protetores auditivos é a sua principal defesa no trabalho.",
-      [TinnitusType.PULSATILE]: "Zumbido pulsátil deve ser avaliado por um especialista. Proteja seus ouvidos.",
-      [TinnitusType.CRICKET]: "Sons intermitentes também indicam fadiga auditiva. Faça pausas de silêncio.",
-    };
-
     try {
-      // 1. Define a frase educativa imediatamente
-      setPhrase(frasesFixas[type]);
-
-      // 2. Busca o arquivo MP3 correspondente
-      const response = await fetch(audioMap[type]);
-      if (!response.ok) throw new Error("Arquivo de áudio não encontrado na pasta public");
+      const text = await generateInformativePhrase(type);
+      setPhrase(text);
       
-      const arrayBuffer = await response.arrayBuffer();
-      
-      // 3. Prepara o contexto de áudio para decodificar o MP3
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const buffer = await audioCtx.decodeAudioData(arrayBuffer);
-      
-      // 4. Salva o áudio decodificado e avança para a etapa de audição
+      const base64 = await generateSpeechAudio(text);
+      const buffer = await decodeAudioBuffer(base64, audioCtx);
       setVoiceBuffer(buffer);
+      
       setCurrentStep(Step.LISTENING);
-
+      setIsPlaying(false);
+      setHasStartedOnce(false);
+      setListenTimer(0);
+      setVoiceTrigger(0);
     } catch (e) {
-      console.error("Erro na triagem de áudio:", e);
-      alert("Erro ao carregar a simulação. Verifique se os arquivos MP3 estão na pasta 'public'.");
+      console.error(e);
+      alert("Erro ao preparar a simulação sonora. Tente novamente.");
     } finally {
       setIsLoadingChallenge(false);
     }
@@ -228,12 +207,11 @@ export default function App() {
     setHasStartedOnce(true);
   };
 
- const repeatVoice = () => {
-  setListenTimer(0);
-  // Date.now() gera um número gigante que muda a cada milissegundo
-  setVoiceTrigger(Date.now()); 
-  setIsPlaying(true);
-};
+  const repeatVoice = () => {
+    setListenTimer(0);
+    setVoiceTrigger(prev => prev + 1);
+    setIsPlaying(true);
+  };
 
   const stopListening = () => {
     setIsPlaying(false);
@@ -411,11 +389,10 @@ export default function App() {
                   <div className="flex flex-col gap-3 w-full animate-in fade-in duration-500">
                     <button 
                       onClick={repeatVoice}
-                      disabled={isPlaying}
-                      className={`px-12 py-4 bg-white border-2 border-[#005f60] text-[#005f60] hover:bg-teal-50 font-black rounded-2xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-3 ${isPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`px-12 py-4 bg-white border-2 border-[#005f60] text-[#005f60] hover:bg-teal-50 font-black rounded-2xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-3`}
                     >
                       <span className="text-2xl">{isPlaying ? '🔊' : '🔄'}</span> 
-                      {isPlaying ? 'OUVINDO...' : 'REPETIR FRASE'}
+                      {isPlaying ? 'REINICIAR' : 'REPETIR FRASE'}
                     </button>
                     <button 
                       onClick={stopListening}

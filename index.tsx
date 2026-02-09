@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-// Criamos a conexão com o 'root' do seu index.html
+// O React procura o ID 'root' que você colocou no index.html
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
@@ -13,5 +13,6 @@ if (rootElement) {
     </React.StrictMode>
   );
 } else {
-  console.error("Não foi possível encontrar o elemento root no seu index.html");
+  // Isso ajuda a diagnosticar se o HTML está correto
+  console.error("Erro: O elemento 'root' não foi encontrado no index.html");
 }

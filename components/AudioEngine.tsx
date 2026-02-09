@@ -147,16 +147,8 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
   };
 
   useEffect(() => {
-    if (isPlaying) startSimulation();
-    else stopAll();
-    return () => stopAll();
-  }, [isPlaying, type, voiceBuffer]);
-
-  // Efeito separado para repetir apenas a voz quando o gatilho mudar
-  useEffect(() => {
-  if (isPlaying && voiceTrigger > 0) {
-    startVoice();
+  if (voiceTrigger > 0 && voiceBuffer) {
+    // Lógica para tocar o som novamente
+    playAudio(voiceBuffer); 
   }
-}, [voiceTrigger]);
-  return null;
-};
+}, [voiceTrigger]); // O som reinicia toda vez que o gatilho muda;

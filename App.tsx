@@ -1,12 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
-import { TinnitusType } from './types';
-import { 
-  generatePersonalizedAdvice, 
-  generateInformativePhrase, 
-  generateSpeechAudio, 
-  decodeAudioBuffer 
-} from './services/geminiService';
+import { TinnitusType, Step } from './types'; // Apenas um ponto
+import { AudioEngine } from './AudioEngine'; // Remova o '/components'
+// Se o geminiService estiver na raiz também:
+import { generatePersonalizedAdvice } from './geminiService';
 import { AudioEngine } from './components/AudioEngine';
 
 enum Step {

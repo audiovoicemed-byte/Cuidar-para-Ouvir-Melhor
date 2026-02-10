@@ -208,11 +208,13 @@ export default function App() {
     setHasStartedOnce(true);
   };
 
-  const repeatVoice = () => {
-    setListenTimer(0);
-    setVoiceTrigger(prev => prev + 1);
-    setIsPlaying(true);
-  };
+const repeatVoice = () => {
+  // Resetamos o timer visual
+  setListenTimer(0);
+  // O segredo para o botão funcionar sempre:
+  setVoiceTrigger(Date.now()); 
+  setIsPlaying(true);
+};
 
   const stopListening = () => {
     setIsPlaying(false);

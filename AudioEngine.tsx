@@ -136,7 +136,7 @@ export const AudioEngine: React.FC<AudioEngineProps> = ({ type, isPlaying, voice
 
     tinnitusNodeRef.current.start();
     
-    // Inicia a voz
+  // Inicia a voz
     if (voiceBuffer) {
       startVoice();
     }
